@@ -1,215 +1,141 @@
-import java.util.Scanner;
+import java.util.*;
 import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 public class Lexer implements ct {
     private HashMap<String, Token> lexicon;    // Map containing token productions
-    private HashMap<String, ArrayList<Integer>> tknLocations;    // 
-    private Scanner in;
-    
+    private ArrayList<Token> tokenList;
+    private static Scanner in;
+
     public Lexer(String dictionary) throws java.io.FileNotFoundException {
         lexicon = new HashMap<>();
-        tknLocations = new HashMap<>();
+        tokenList = new ArrayList<>();
         in = new Scanner(new FileInputStream(dictionary));
 
-        // Initialize language dictionary and token locations map
+        // Initialize language dictionary
         while (in.hasNextLine()) {
-                String line = in.nextLine();
-                String[] arr = line.split("\t");
+            String line = in.nextLine();
+            String[] arr = line.split("\t");
 
-                assert arr.length == 3 : "Expected 3 token arguments, receive " + arr.length + "\n";
-                    int id = Integer.parseInt(arr[0]);
-                    String meaning = arr[1],
-                        key = arr[2];
-                
-                    lexicon.put(key, new Token(id, meaning));
-                    tknLocations.put(meaning, new ArrayList<>());
+            assert arr.length == 3 : "Expected 3 token arguments, receive " + arr.length + "\n";
+            int id = Integer.parseInt(arr[0]);
+            String meaning = arr[1];
+            String key = arr[2];
+
+            lexicon.put(key, new Token(id, meaning));
         }
-        lexicon.put("string", new Token(5, "str"));
-        tknLocations.put("str", new ArrayList<>());
-        /**
-         *  Handle special cases:
-         *  identifiers
-         *  integers
-         *  floats
-         *  strings
-         *  float tokens (optional fields)
-         *  int tokens (optional fields)
-          */
-
-        System.out.println("Map contains: " + lexicon.size() + " keys.");
         in.close();
     }
+
     
-    // Store the token's line origin in the 'token locations' map
-    private void updateTokenLocations(String keyword, int lineNr) {
-        if (tknLocations.containsKey(keyword))
-            tknLocations.get(keyword).add(lineNr);
-    }
-    
-    public void doSomething(String program) throws java.io.FileNotFoundException {
+    public void tokenize(String program) throws java.io.FileNotFoundException {
         in = new Scanner(new FileInputStream(program));
         int lineNum = 0;
-        
-        /**
-         * breaks go to next line, 
-         * continue goes to next character (word because inherently whitespace delimited).
-         **/
-        
+
+        System.out.println("Found file: " + program);
+
         while (in.hasNextLine()) {
-            lineNum++;
-            char[] line = in.nextLine().toCharArray();
+            final char[] line = in.nextLine().toCharArray();
+            final int EOL = line.length-1;
             String builtWord = "";
-            
-            for (int i = 0, j = 0; i < line.length; i++) {
+
+            lineNum++;
+            // Read each char
+            for (int i = 0; i < line.length; i++) {
                 char c = line[i];
 
-                /**
-                 *  URGENT:
-                 *  Data structure for containing tokens needs to be redesigned,
-                 *  no order, special tokens can't be accessed for their values
-                 *  (strings, ints, floats, etc.)
-                 */
-                // Encounter a string
+                // Test cases:
+                // Strings
                 if (c == '"') {
-                    String str = "";
+                    String string = "";    // The string enclosed in quotations
+                    i++; // advance past double quote mark
 
-                    if (i+1 < line.length) {
-                        while (++i < line.length) {
-                            c = line[i];
-
-                            if (c == '"') {
-                                tknLocations.get("str").add(lineNum);
-                                break;
-                            }
-
-                            str += c;
-                        }
-                    }
-                    else {
-                        System.out.printf("Error at line %d: closing double-quote " +
-                                          "not found on current line")
-                    }
+                    while (i < line.length && line[i] != '"')
+                        string += line[i++];
+                    if (line[i] == '"')
+                        tokenList.add(new StringToken(string, lineNum));
                 }
 
-                
-                else if (c == ' ') {     // whitespace "delimiter"
-                    if (builtWord.contains("//"))    // Comments
-                        break; 
-                    
-                    // check map for word
-                    if (lexicon.containsKey(builtWord)) {
-                        updateTokenLocations(builtWord, lineNum);
-                        continue;
-                    }
-                    
-                    // reset for next word
+                // Spaces and tabs
+                else if (c == ' ' || c == '\t') {
+                    if (lexicon.containsKey(builtWord))
+                        tokenList.add(new Token(lexicon.get(builtWord).getID(), builtWord, lineNum));
+                    else if (ct.isIdentifier(builtWord))
+                        tokenList.add(new Token(2, builtWord, lineNum));
                     builtWord = "";
                     continue;
                 }
-                
-                // word contains operator symbol
+
+                // Punctuation or other symbols
                 else if (ct.isOp(c)) {
-                    // Find actual letter builtWords in map (e.g., 'print' in "print()")
+                    // Tokenize keyword or identifier first (e.g., 'print' in "print()")
                     if (lexicon.containsKey(builtWord))
-                        updateTokenLocations(builtWord, lineNum);
-                    else {
-                        // To-do: also handle identifiers
-                    }
-                    
-                    // Test multi-symbol (MS) operators (e.g. '<' of "<=")
-                    if (ct.isPartialOp(c)) {   
+                        tokenList.add(new Token(lexicon.get(builtWord).getID(), builtWord, lineNum));
+                    else if (ct.isIdentifier(builtWord))
+                        tokenList.add(new Token(2, builtWord, lineNum));
+
                         String operator = Character.toString(c);
-                        // Test end of line
-                        if (i+1 <= line.length) {
+                        // Test multi-symbol (MS) operators (e.g. '<' of "<=")
+                        if (i+1 <= EOL) {
                             char nextChar = line[i+1];
-                            
-                            // Look ahead for possible MS operator
-                            if (ct.isMultiChar(c, nextChar)) {
-                                operator += Character.toString(nextChar);
+
+                            // Distinguish divide symbol from comment
+                            if (ct.isComment(c, nextChar)) {
                                 i++;
+                                builtWord = "";
+                                break;
                             }
+                            else if (ct.isPartialOp(c)) 
+                                if (ct.isMultiChar(c, nextChar)) {
+                                    i++;
+                                    operator += Character.toString(nextChar);
+                                }
                         }
-                        updateTokenLocations(operator, lineNum);
-                        continue;
-                    }
-                    
+                        if (lexicon.containsKey(operator))
+                            tokenList.add(new Token(lexicon.get(operator).getID(), operator, lineNum));
                     builtWord = "";
+                    continue;
+                }
+
+                // Floats and integers
+                else if (Character.isDigit(c) && builtWord == "") {
+                    String number = "";
+                    while (i < line.length && ct.isFloatForm(line[i])) {
+                        if (line[i] == '.' && number.contains(".")) {
+                                System.out.println("Error - invalid '.' found");
+                                return;
+                        }
+                        number += line[i];
+                        i++;
+                    }
+                    i--; // decrement because the char causing the exit condition is needed
+                    if (number.contains("."))
+                        tokenList.add( new FloatToken(Float.parseFloat(number), lineNum) );
+                    else
+                        tokenList.add( new IntToken(Integer.parseInt(number), lineNum) );
+                    continue;
                 }
                 else builtWord += c;
-                j = i;
             }
+            // End-of-line words/identifiers
+            if (lexicon.containsKey(builtWord))
+                tokenList.add(new Token(lexicon.get(builtWord).getID(), builtWord, lineNum));
+            else if (ct.isIdentifier(builtWord))
+                tokenList.add(new Token(2, builtWord, lineNum));
         }
-    
-            
-//            String[] builtWords = in.nextLine().split(" ");
-//            
-//            // Read each builtWord in the line
-//            for (String builtWord : builtWords) {
-//                if (builtWord == " ") continue;    // extra spaces after string split
-//                if (builtWord.contains("//")) break; // exit current line if comment 
-//                
-//                
-//                // Check if whole builtWord exists in lexicon
-//                if (lexicon.containsKey(builtWord)) {
-//                    updateTokenLocations(builtWord, lineNum);
-//                    continue;
-//                }
-//                if (builtWord.contains("\"")) {
-//                    // Problematic with String wrapper class delimiter method
-//                    containsString = true;
-////                    if (
-//                }
-//                
-//                String partialWord = "";
-//                
-//                // Otherwise, read the builtWord character-by-character for concatenated token builtWords  
-//                for (int i = 0; i < builtWord.length(); i++) {
-//                    char c = builtWord.charAt(i);
-//                    String C = Character.toString(c);
-//                    
-//                    // Not a letter, digit, or underscore
-//                    if (ct.isOp(c)) {
-//                        // Find actual letter builtWords in map (e.g., 'print' in "print()")
-//                        if (lexicon.containsKey(partialWord)) {
-//                            // To-do: also handle identifiers
-//                            updateTokenLocations(partialWord, lineNum);
-//                        }
-//                        
-//                        if (ct.isPartialOp(c)) {    // Test multi-symbol operators (e.g. '<' of "<=")
-//                            // WIP
-//                            String cStr = Character.toString(c);
-//                            if (i+1 < builtWord.length()) {
-//                                char nextChar = builtWord.charAt(i+1); // next char in the builtWord
-//                                if (ct.isMultiChar(c, nextChar)) {
-//                                    updateTokenLocations(cStr + Character.toString(nextChar), lineNum);
-//                                    i++;
-//                                }
-//                                else if (lexicon.containsKey(cStr)) { 
-//                                    updateTokenLocations(cStr, lineNum);
-//                                }
-//                            }
-//                        }
-//                        else if (ct.isSingleOp(c)) {
-//                            if (lexicon.containsKey(c)) 
-//                                updateTokenLocations(C, lineNum);
-//                            else {
-////                                System.out.printf("Char '%c' is not a token in the lexicon.\n", c);
-////                                To-do: error handling for invalid symbols
-//                                
-//                                return;
-//                            }
-//                        }
-//                        
-//                    }
-//                    else {
-//                        partialWord += c;
-//                    }
-//                } 
-//            }
-//        }
+        tokenList.add( new Token(0, "", lineNum ));
+        System.out.println("\n\n----End of doSomething method----\n");
         in.close();
         return;
     }
+    
+    public ArrayList<Token> getTokens() {
+        return tokenList;
+    }
+
+    public void displayTokens() {
+        for (Token t : tokenList)
+            System.out.println(t.toString());
+    }
+
+    public void close() { in.close(); }
 }

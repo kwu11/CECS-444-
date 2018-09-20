@@ -1,16 +1,38 @@
 // Character Tester (ct) Interface
 interface ct {
-    
-    // check if c
-    static public boolean isOp (final char c) {
-        return (isDelimiter(c) || isOtherPunct(c) || isPairedDelimiter(c));
+
+    public static boolean isComment (final char c1, final char c2) {
+        return c1 == '/' && c2 == '/';
     }
-    
-    static public boolean isPartialOp(final char c) {
+
+    public static boolean isIdentifier(final String str) {
+        if (str.length() > 0) {
+            char t = str.charAt(0);
+            if (t == '_' || Character.isLetter(t)) {
+                for (int j = 1; j < str.length(); j++) {
+                    char next = str.charAt(j);
+                    if (!(next == '_' || Character.isLetter(next) || Character.isDigit(next)))
+                        return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static  boolean isFloatForm (final char c) {
+        return Character.isDigit(c) || c == '.';
+    }
+
+    public static boolean isOp (final char c) {
+        return (isDelimiter(c) || isOtherPunct(c) || isPairedDelimiter(c) || isPartialOp(c));
+    }
+
+    public static boolean isPartialOp(final char c) {
         return (c == '-' || c == '=' || c == '!' || c == '<' || c == '>');
     }
-    
-    static public boolean isMultiChar(final char c1, final char c2) {
+
+    public static boolean isMultiChar(final char c1, final char c2) {
         switch (c1) {
             case '-': return c2 == '>';
             case '=': return c2 == '=';
@@ -21,38 +43,24 @@ interface ct {
         }
     }
     
-    static public boolean isSingleOp(final char c) {
+    public static boolean isSingleOp(final char c) {
         return (isDelimiter(c) || isOtherPunct(c) || isPairedDelimiter(c));
     }
     
     // Tests for operator symbols
-    static boolean isDelimiter(final char c) {
+    public static boolean isDelimiter(final char c) {
         return (c == ',' || c == ';');
     }
     
-    static boolean isOtherPunct(final char c) {
-        return (c == '*' || c == '^' || c == ':' || c == '.' || c == '=' 
+    public static boolean isOtherPunct(final char c) {
+        return (c == '*' || c == '^' || c == ':' || c == '.' || c == '='
                     || c == '-' || c == '+' || c == '/');
     }
     
-    static boolean isPairedDelimiter(final char c) {
-        return (c == '<' || c == '>' || c == '('
-                    || c == ')'|| c == '{'|| c == '}');
-    }
-    
-    static public boolean isDigit(final char c) {
-        return Character.isDigit(c);
-    }
-    
-    static public boolean isIdentifier() {
-        return false;
-    }
-    
-    static public boolean isInt() {
-        return false;
-    }
-    
-    static public boolean isFloat() {
-        return false;
+    public static boolean isPairedDelimiter(final char c) {
+        return (   c == '<' || c == '>'
+                || c == '(' || c == ')'
+                || c == '{' || c == '}'
+                || c == '[' || c == ']');
     }
 }
