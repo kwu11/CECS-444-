@@ -25,7 +25,6 @@ public class Lexer implements ct {
         }
         in.close();
     }
-
     
     public void tokenize(String program) throws java.io.FileNotFoundException {
         in = new Scanner(new FileInputStream(program));
@@ -43,16 +42,20 @@ public class Lexer implements ct {
             for (int i = 0; i < line.length; i++) {
                 char c = line[i];
 
-                // Test cases:
+                /**
+                 *  Test cases
+                 */
                 // Strings
                 if (c == '"') {
                     String string = "";    // The string enclosed in quotations
                     i++; // advance past double quote mark
 
-                    while (i < line.length && line[i] != '"')
-                        string += line[i++];
-                    if (line[i] == '"')
-                        tokenList.add(new StringToken(string, lineNum));
+                    while (i < line.length && line[i] != '"') string += line[i++];
+                    if (line[i] == '"') tokenList.add(new StringToken(string, lineNum));
+                    else {
+                        System.out.println("Error - Matching  \"  not found on line:" + lineNum);
+                        return;
+                    }
                 }
 
                 // Spaces and tabs
@@ -122,20 +125,15 @@ public class Lexer implements ct {
             else if (ct.isIdentifier(builtWord))
                 tokenList.add(new Token(2, builtWord, lineNum));
         }
-        tokenList.add( new Token(0, "", lineNum ));
-        System.out.println("\n\n----End of doSomething method----\n");
+        tokenList.add(new Token(0, "", lineNum));
+        System.out.println("\n\n----Program tokenized----\n");
         in.close();
         return;
     }
     
-    public ArrayList<Token> getTokens() {
-        return tokenList;
-    }
+    public ArrayList<Token> getTokens() { return tokenList; }
 
-    public void displayTokens() {
-        for (Token t : tokenList)
-            System.out.println(t.toString());
-    }
+    public void displayTokens() { for (Token t : tokenList) System.out.println(t.toString()); }
 
     public void close() { in.close(); }
 }

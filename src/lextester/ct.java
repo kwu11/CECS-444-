@@ -1,6 +1,5 @@
 // Character Tester (ct) Interface
 interface ct {
-
     public static boolean isComment (final char c1, final char c2) {
         return c1 == '/' && c2 == '/';
     }
@@ -11,7 +10,7 @@ interface ct {
             if (t == '_' || Character.isLetter(t)) {
                 for (int j = 1; j < str.length(); j++) {
                     char next = str.charAt(j);
-                    if (!(next == '_' || Character.isLetter(next) || Character.isDigit(next)))
+                    if ( !(next == '_' || Character.isLetter(next) || Character.isDigit(next)) )
                         return false;
                 }
                 return true;

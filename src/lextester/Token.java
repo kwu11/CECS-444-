@@ -25,16 +25,13 @@ class Token {
     public String getMeaning() { return Meaning; }
     public int getLine() { return lineNum; }
 
-    public String toString() {
-        return String.format("(Tok: %3d line= %3d str= \"%s\")", ID, lineNum, Meaning);
-    }
+    public String toString() { return String.format("(Tok: %3d line= %3d str= \"%s\")", ID, lineNum, Meaning); }
 }
 
 
 /**
- *  String, Float, and Integer Tokens
+ *  Integer, Float, and String Tokens
  */
-
 class IntToken extends Token {
     final private int integer;
 
@@ -46,11 +43,7 @@ class IntToken extends Token {
     }
 
     @Override
-    public String toString() {
-        // ex. (Tok: 3 line= 5 str= "2" int= 2)
-//        return "(Tok: " + ID + " line= " + lineNum + " str= \"" + integer +  "\" + int= " + integer + ")";
-        return String.format("(Tok: %3d line= %3d str = \"%d\" int= %d)", ID, lineNum, integer, integer);
-    }
+    public String toString() { return String.format("(Tok: %3d line= %3d str = \"%d\" int= %d)", ID, lineNum, integer, integer); }
 }
 
 class FloatToken extends Token {
@@ -64,9 +57,7 @@ class FloatToken extends Token {
     }
 
     @Override
-    public String toString() {
-        return String.format("(Tok: %3d line= %3d str = \"%.6f\" float = %.6f)", ID, lineNum, fl, fl);
-    }
+    public String toString() { return String.format("(Tok: %3d line= %3d str = \"%.6f\" float = %.6f)", ID, lineNum, fl, fl); }
 }
 
 class StringToken extends Token {
@@ -80,7 +71,5 @@ class StringToken extends Token {
     }
 
     @Override
-    public String toString() {
-        return String.format("(Tok: %3d line= %3d str= \"%s\")", ID, lineNum, contents);
-    }
+    public String toString() { return String.format("(Tok: %3d line= %3d str= \"%s\")", ID, lineNum, contents); }
 }
