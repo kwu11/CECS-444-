@@ -24,12 +24,13 @@ public class LexTester {
             }
 
             else {
+                Lexer l = new Lexer();
+
                 Scanner input = new Scanner(System.in);
                 System.out.print("Enter the name of the file to tokenize:\n> ");
                 program = input.nextLine();
                 input.close();
-
-                Lexer l = new Lexer();
+                
                 l.tokenize(program);
                 l.displayTokens();
                 System.out.printf("\n%s contains: %d tokens.\n", program, l.getTokens().size());
