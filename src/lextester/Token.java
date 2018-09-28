@@ -1,7 +1,9 @@
 /**
+ *  Author: Kyle Wu
  *  This class represents the different types of tokens that are represented in the A4 language.
  *  Reserved words, integers, floats, strings, and identifiers are recognized.
  */
+
 class Token {
     protected int ID;
     protected String Meaning;

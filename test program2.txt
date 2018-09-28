@@ -1,0 +1,6 @@
+(Tok: 10 line= 1 str= "prog")
+(Tok: 11 line= 1 str= "main")
+(Tok: 33 line= 1 str= "{")
+(Tok: 2 line= 2 str= "print")
+(Tok: 37 line= 2 str= "(")
+(Tok: 5 line= 2 str= "Input legs> ")

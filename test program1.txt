@@ -1,4 +1,4 @@
-"a big-ass string"()5.5 <= >= = int "another" 
+"a string"()5.5 <= >= = int "another" 
 "over here"
 int main//comment
 // what about this

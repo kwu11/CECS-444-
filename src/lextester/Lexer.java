@@ -1,10 +1,11 @@
 /**
+ *  Author: Kyle Wu
  *  This is the core of the program. The lexer tokenizes a given file and outputs the tokens and
  *  the number of tokens in the file.
  */
 
 import java.util.*;
-import java.io.FileInputStream;
+import java.io.*;
 
 public class Lexer implements ct {
     private HashMap<String, Token> lexicon;    // Map containing token productions
@@ -13,10 +14,15 @@ public class Lexer implements ct {
 
     public Lexer() throws java.io.FileNotFoundException {
         String dictionary = "lexicon.txt";
+        File file = new File(dictionary);
+        if (!file.exists()) {
+            System.out.println("Error - cannot find dictionary file: " + dictionary);
+            throw new FileNotFoundException();
+        }
 
         lexicon = new HashMap<>();
         tokenList = new ArrayList<>();
-        in = new Scanner(new FileInputStream(dictionary));
+        in = new Scanner(file);
 
         // Initialize language dictionary
         while (in.hasNextLine()) {
@@ -24,7 +30,7 @@ public class Lexer implements ct {
             String[] arr = line.split("\t");
 
             // Assert messages don't work
-            assert arr.length == 3 : "Expected 3 token arguments, receive " + arr.length + "\n";
+            assert arr.length == 3 : "Expected 3 token arguments, received " + arr.length + "\n";
             int id = Integer.parseInt(arr[0]);
             String meaning = arr[1];
             String key = arr[2];
@@ -32,6 +38,7 @@ public class Lexer implements ct {
             lexicon.put(key, new Token(id, meaning));
         }
         in.close();
+
     }
 
     /**
@@ -41,10 +48,16 @@ public class Lexer implements ct {
      * @throws java.io.FileNotFoundException
      */
     public void tokenize(String program) throws java.io.FileNotFoundException {
-        in = new Scanner(new FileInputStream(program));
+        File file = new File(program);
+        if (!file.exists()) {
+            System.out.println("Error - cannot find file: " + program);
+            throw new FileNotFoundException();
+        }
+
+        in = new Scanner(new File(program));
         int lineNum = 0;
 
-        System.out.println("Found file: " + program);
+        System.out.println("\nFound file: " + program);
 
         while (in.hasNextLine()) {
             final char[] line = in.nextLine().toCharArray();
@@ -150,7 +163,7 @@ public class Lexer implements ct {
                 tokenList.add(new Token(2, builtWord, lineNum));
         }
         tokenList.add(new Token(0, "", lineNum));
-        System.out.println("\n\n----Program tokenized----\n");
+        System.out.println("\n----Program tokenized----\n");
         in.close();
         return;
     }

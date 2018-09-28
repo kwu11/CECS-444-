@@ -1,7 +1,9 @@
 /**
+ *  Author: Kyle Wu
  *  This interface includes methods to test a character for specific tokens such as punctuation,
  *  delimiters (paired and unpaired), math operators, etc.
  */
+
 interface ct {
     // Tests a pair of chars for 'comment' token
     public static boolean isComment (final char c1, final char c2) {
